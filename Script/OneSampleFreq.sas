@@ -12,8 +12,8 @@ proc datasets lib=work memtype=data kill nolist; quit;
     margin   =   0,
     prior_a  =   1, 
     prior_b  =   1, 
-    gamma_L  =-999,
-    gamma_U  =+999,
+    gamma_L  =   0,
+    gamma_U  =   1,
 
     sims   =  1000,
     nmc    =  1000,
@@ -111,8 +111,8 @@ proc datasets lib=work memtype=data kill nolist; quit;
 
 		*****  execution *****;
 		
-		results = J(ncol(&ntotal.), 8, .);
-		create Results from results[colname=({lambda gamma_L gamma_U ntotal power ESS interim se})];
+		results = J(ncol(&ntotal.), 7, .);
+		create Results from results[colname=({lambda gamma_L samplesize power ESS interim se})];
 		do i = 1 to ncol(&ntotal.);
 		    
 			%* init;
@@ -149,9 +149,9 @@ proc datasets lib=work memtype=data kill nolist; quit;
 
 				if j >= 2 then do;
 					* early stopping with promising result;
-                    promising[,j] = ((posterior_prob[,j] >= &lambda.) | (predictive_prob[,j] >= &gamma_U.)) + promising[,1:j-1][,+];
+                    promising[,j] = (posterior_prob[,j]  > &lambda. ) + promising[,1:j-1][,+];
 					* early stopping with futility result;
-                    futility[,j]  = (                                   (predictive_prob[,j] <= &gamma_L.)) +  futility[,1:j-1][,+];
+                    futility[,j]  = (predictive_prob[,j] < &gamma_L.) +  futility[,1:j-1][,+];
 				end;
 
 			end;
@@ -160,12 +160,12 @@ proc datasets lib=work memtype=data kill nolist; quit;
 			/* print n y_sum posterior_prob predictive_prob met; */
 			
 			* ntotal & power;
-			ntotal  = &ntotal.[i];
+			samplesize  = &ntotal.[i];
 			interim = ncol(&interim.)-2;
 			power = mean(met);
 			se    =  std(met) / sqrt(&sims.);
 			ESS     = (n ## ( promising + futility <= 1))[,+][:,];
-			results = &lambda. || &gamma_L. || &gamma_U. || ntotal || power || ESS || interim || se;
+			results = &lambda. || &gamma_L. || samplesize || power || ESS || interim || se;
 
 			append from results;
 		end;

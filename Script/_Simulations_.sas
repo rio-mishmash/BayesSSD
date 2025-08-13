@@ -58,7 +58,6 @@ title4 "with interim analysis (0.7N)";
     interim        = {0.0 0.7 1.0},
     lambda         = 0.93,
     gamma_L        = 0.10,
-    gamma_U        = 0.80,
     sides          = "U",
     sims           = &sims.,
     nmc            = &nmc.
@@ -119,7 +118,6 @@ title4 "with interim analysis (0.7N)";
     interim        = {0.0 0.7 1.0},
     lambda         = 0.93,
     gamma_L        = 0.10,
-    gamma_U        = 0.80,
     sides          = "U",
     sims           = &sims.,
     nmc            = &nmc.
@@ -188,7 +186,6 @@ title4 "with interim analysis (0.7N)";
     lambda   = 0.93,
     sides    = "L",
     gamma_L  = 0.10,
-    gamma_U  = 1.00,
     sims     = &sims.,
     nmc      = &nmc.
 );
@@ -250,8 +247,7 @@ title4 "with interim analysis (0.7N)";
     interim  = {0.0 0.7 1.0},
     lambda   = 0.93,
     sides    = "L",
-    gamma_L  = 0.20,
-    gamma_U  = 0.80,
+    gamma_L  = 0.10,
     sims     = &sims.,
     nmc      = &nmc.
 );
@@ -314,7 +310,6 @@ title4 "with interim analysis (0.5N 0.7N)";
     interim        = {0.0 0.5 0.7 1.0},
     lambda         = 0.95,
     gamma_L        = 0.10,
-    gamma_U        = 0.80,
     sides          = "U",
     sims           = &sims.,
     nmc            = &nmc.
@@ -375,7 +370,6 @@ title4 "with interim analysis (0.5N 0.7N)";
     interim        = {0.0 0.5 0.7 1.0},
     lambda         = 0.95,
     gamma_L        = 0.10,
-    gamma_U        = 0.80,
     sides          = "U",
     sims           = &sims.,
     nmc            = &nmc.
@@ -444,7 +438,6 @@ title4 "with interim analysis (0.5N, 0.7N)";
     lambda     = 0.95,
     sides      = "L",
     gamma_L    = 0.10,
-    gamma_U    = 1.00,
     sims       = &sims.,
     nmc        = &nmc.
 );
@@ -506,8 +499,7 @@ title4 "with interim analysis (0.5N 0.7N)";
     interim    = {0.0 0.5 0.7 1.0},
     lambda     = 0.95,
     sides      = "L",
-    gamma_L    = 0.20,
-    gamma_U    = 0.80,
+    gamma_L    = 0.10,
     sims       = &sims.,
     nmc        = &nmc.
 );

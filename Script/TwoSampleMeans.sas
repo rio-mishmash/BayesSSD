@@ -140,11 +140,13 @@ proc datasets lib=work memtype=data kill nolist; quit;
                                                   (ncurrent*y0_mean_obs + (npergroup-ncurrent)*y0_mean_pred) / max(npergroup,1), 
                                                   (ncurrent*y1_mean_obs + (npergroup-ncurrent)*y1_mean_pred) / max(npergroup,1), 
                                                    stddev, lambda, sides, margin);
-				predictive_prob = (posterior_prob >= lambda)[,:]; *rowMeans;
 			end;
             else do;
-                predictive_prob = .;
+                posterior_prob = f_posterior_prob( npergroup, prior0_eta, prior0_tau, prior1_eta, prior1_tau, 
+                                                   y0_mean_obs, y1_mean_obs, 
+                                                   stddev, lambda, sides, margin);
             end;
+            predictive_prob = (posterior_prob >= lambda)[,:]; *rowMeans;
 
             return predictive_prob;
         finish;

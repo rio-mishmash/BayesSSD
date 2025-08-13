@@ -113,11 +113,13 @@ proc datasets lib=work memtype=data kill nolist; quit;
                                                   (ncurrent*y_mean_obs
                                                    + (ntotal-ncurrent)*y_mean_pred) / max(ntotal,1), 
                                                    stddev, nullmean, lambda, sides, margin);
-				predictive_prob = (posterior_prob >= lambda)[,:]; *rowMeans;
 			end;
-            else do;
-                predictive_prob = .;
-            end;
+			else do;
+                posterior_prob = f_posterior_prob( ntotal, prior_eta, prior_tau, 
+                                                   y_mean_obs, 
+                                                   stddev, nullmean, lambda, sides, margin);
+			end;
+			predictive_prob = (posterior_prob >= lambda)[,:]; *rowMeans;
 			
 			return predictive_prob; 
         finish;
@@ -165,7 +167,7 @@ proc datasets lib=work memtype=data kill nolist; quit;
 			end;
 			
 			met = (promising[,+] > 0);
-			/* print n y_mean posterior_prob predictive_prob met; */
+			/* print n y_mean posterior_prob[format=8.3] promising futility; */
 
 			* samplesize & power;
 			samplesize = &ntotal.[i];

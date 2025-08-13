@@ -100,14 +100,17 @@ proc datasets lib=work memtype=data kill nolist; quit;
                 * sampling from the posterior distribution;
                 epsilon = J(&sims., &nmc., .);
                 call randgen(epsilon, "normal", 0, tau); * mean=0;
-                mu_sample = epsilon + eta;               * mean=eta;
-                mu_sample_long = shape(mu_sample, &sims.*&nmc.); * long;
-            
+                * mean=0 -> mean=eta -> long; 
+                mu_sample_long = shape( epsilon + eta , &sims.*&nmc.); free epsilon;
+                
                 epsilon = J(&sims.*&nmc., ntotal-ncurrent, .);
                 call randgen(epsilon, "normal", 0, stddev); * mean=0;
-                y_pred_long = mu_sample_long + epsilon;     * mean=mu;                
-                y_mean_pred_long = y_pred_long[,:]; *rowMeans;
-                y_mean_pred = shape(y_mean_pred_long, &sims.);
+                * mean=0 -> mean=mu; 
+                epsilon = mu_sample_long + epsilon;          free mu_sample_long;
+                * rowMeans -> wide; 
+                y_mean_pred = shape( epsilon[,:] , &sims.);  free epsilon;
+
+                free epsilon mu_sample mu_sample_long y_pred_long y_mean_pred_long;
                 
                 posterior_prob = f_posterior_prob( ntotal, prior_eta, prior_tau, 
                                                   (ncurrent*y_mean_obs

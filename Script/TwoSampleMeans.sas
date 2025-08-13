@@ -112,33 +112,44 @@ proc datasets lib=work memtype=data kill nolist; quit;
             
 			* predictive response;
             if (npergroup-ncurrent) > 0 then do;
-			
-                * sampling from the posterior distribution;
-                epsilon = J(&sims., &nmc., .);
-                call randgen(epsilon, "normal", 0, tau0); * mean=0;
-                mu0_sample = epsilon + eta0;               * mean=eta;
-                mu0_sample_long = shape(mu0_sample, &sims.*&nmc.); * long;
-            
-                epsilon = J(&sims.*&nmc., npergroup-ncurrent, .);
-                call randgen(epsilon, "normal", 0, stddev); * mean=0;
-                y0_pred_long = mu0_sample_long + epsilon;     * mean=mu;                
-                y0_mean_pred_long = y0_pred_long[,:]; *rowMeans;
-                y0_mean_pred = shape(y0_mean_pred_long, &sims.);
 
-                epsilon = J(&sims., &nmc., .);
-                call randgen(epsilon, "normal", 0, tau1); * mean=0;
-                mu1_sample = epsilon + eta1;               * mean=eta;
-                mu1_sample_long = shape(mu1_sample, &sims.*&nmc.); * long;
-            
-                epsilon = J(&sims.*&nmc., npergroup-ncurrent, .);
-                call randgen(epsilon, "normal", 0, stddev); * mean=0;
-                y1_pred_long = mu0_sample_long + epsilon;     * mean=mu;                
-                y1_mean_pred_long = y1_pred_long[,:]; *rowMeans;
-                y1_mean_pred = shape(y1_mean_pred_long, &sims.);
+                * arm 0;
+                
+                    * sampling from the posterior distribution;
+                    epsilon = J(&sims., &nmc., .);
+                    call randgen(epsilon, "normal", 0, tau0); * mean=0;
+                    * mean=0 -> mean=eta -> long; 
+                    mu0_sample_long = shape( epsilon + eta0 , &sims.*&nmc.); free epsilon;
+                    
+                    epsilon = J(&sims.*&nmc., npergroup-ncurrent, .);
+                    call randgen(epsilon, "normal", 0, stddev); * mean=0;
+                    * mean=0 -> mean=mu; 
+                    epsilon = mu0_sample_long + epsilon;          free mu0_sample_long;
+                    * rowMeans -> wide; 
+                    y0_mean_pred = shape( epsilon[,:] , &sims.);  free epsilon;
+
+                * arm 1;
+                
+                    * sampling from the posterior distribution;
+                    epsilon = J(&sims., &nmc., .);
+                    call randgen(epsilon, "normal", 0, tau0); * mean=0;
+                    * mean=0 -> mean=eta -> long; 
+                    mu1_sample_long = shape( epsilon + eta1 , &sims.*&nmc.); free epsilon;
+                    
+                    epsilon = J(&sims.*&nmc., npergroup-ncurrent, .);
+                    call randgen(epsilon, "normal", 0, stddev); * mean=0;
+                    * mean=0 -> mean=mu; 
+                    epsilon = mu1_sample_long + epsilon;          free mu1_sample_long;
+                    * rowMeans -> wide; 
+                    y1_mean_pred = shape( epsilon[,:] , &sims.);  free epsilon;
                 
                 posterior_prob = f_posterior_prob( npergroup, prior0_eta, prior0_tau, prior1_eta, prior1_tau, 
                                                   (ncurrent*y0_mean_obs + (npergroup-ncurrent)*y0_mean_pred) / max(npergroup,1), 
                                                   (ncurrent*y1_mean_obs + (npergroup-ncurrent)*y1_mean_pred) / max(npergroup,1), 
+                                                   stddev, lambda, sides, margin);
+                
+                posterior_prob = f_posterior_prob( npergroup, prior0_eta, prior0_tau, prior1_eta, prior1_tau, 
+                                                   y0_mean_obs, y1_mean_obs, 
                                                    stddev, lambda, sides, margin);
 			end;
             else do;

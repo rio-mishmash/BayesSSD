@@ -26,7 +26,7 @@
 
 * number of simulations;
 %global sims;
-%let    sims =  500;
+%let    sims = 1000;
 %global nmc;
 %let    nmc  =  200;
 

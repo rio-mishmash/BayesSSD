@@ -147,10 +147,6 @@ proc datasets lib=work memtype=data kill nolist; quit;
                                                   (ncurrent*y0_mean_obs + (npergroup-ncurrent)*y0_mean_pred) / max(npergroup,1), 
                                                   (ncurrent*y1_mean_obs + (npergroup-ncurrent)*y1_mean_pred) / max(npergroup,1), 
                                                    stddev, lambda, sides, margin);
-                
-                posterior_prob = f_posterior_prob( npergroup, prior0_eta, prior0_tau, prior1_eta, prior1_tau, 
-                                                   y0_mean_obs, y1_mean_obs, 
-                                                   stddev, lambda, sides, margin);
 			end;
             else do;
                 posterior_prob = f_posterior_prob( npergroup, prior0_eta, prior0_tau, prior1_eta, prior1_tau, 
@@ -173,10 +169,14 @@ proc datasets lib=work memtype=data kill nolist; quit;
             y1_mean = J(&sims., ncol(&interim.), .);         y1_mean[,1] = 0;
             posterior_prob  = J(&sims., ncol(&interim.), .);
             predictive_prob = J(&sims., ncol(&interim.), .);
-			promising       = J(&sims., ncol(&interim.), .);
-			futility        = J(&sims., ncol(&interim.), .);
+			promising       = J(&sims., ncol(&interim.), 0);
+			futility        = J(&sims., ncol(&interim.), 0);
+			ongoing         = J(&sims., ncol(&interim.), 1);
 		    
 		    do j = 1 to ncol(&interim.);
+			
+				* if already stopped then 0;
+				ongoing[,j]   = (promising[,1:j][,+] + futility[,1:j][,+] = 0);
 		    
 				%* after enrollment;
 				if j > 1 then do;
@@ -202,12 +202,13 @@ proc datasets lib=work memtype=data kill nolist; quit;
                                                         (n[,1:j]#y1_mean[,1:j])[,+] / max(n[,1:j][,+], 1),  /*weighted sum*/
                                                         &stddev., &lambda., &sides., &margin.);
 				
-				if j >= 2 then do;
-					* early stopping with promising result;
-                    promising[,j] = (posterior_prob[,j]  > &lambda. ) + promising[,1:j-1][,+];
-					* early stopping with futility result;
-                    futility[,j]  = (predictive_prob[,j] < &gamma_L.) +  futility[,1:j-1][,+];
+				if j > 1 then do;
+					* stopping with promising result;
+                    promising[,j] = (posterior_prob[,j]  > &lambda. );
+					* stopping with futility  result;
+                    futility[,j]  = (predictive_prob[,j] < &gamma_L.);
 				end;
+
 			end;
 			
 			met = (promising[,+] > 0);
@@ -218,14 +219,17 @@ proc datasets lib=work memtype=data kill nolist; quit;
 			interim = ncol(&interim.)-2;
 			power = mean(met);
 			se    =  std(met) / sqrt(&sims.);
-			ESS     = (n ## ( (promising + futility) <= 1))[,+][:,];
+			ESS     = (n ## ( ongoing=1 ))[,+][:,];
 			results = &lambda. || &gamma_L. || samplesize || power || ESS || interim || se;
 			
 			append from results;
         end;
     quit;
 	
-	proc print data = work.RESULTS; run;
+	proc print data = work.RESULTS; 
+        format se  8.3;
+        format ESS 8.1;
+    run;
 
     %* time to stop;
     data stop;

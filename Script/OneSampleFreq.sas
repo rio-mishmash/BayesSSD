@@ -116,14 +116,18 @@ proc datasets lib=work memtype=data kill nolist; quit;
 		do i = 1 to ncol(&ntotal.);
 		    
 			%* init;
-			n     = J(     1, ncol(&interim.), .);              n[,1] = 0;
+			n     = J(     1, ncol(&interim.), .);                n[,1] = 0;
 			y_sum = J(&sims., ncol(&interim.), .);		      y_sum[,1] = 0;
 			posterior_prob  = J(&sims., ncol(&interim.), .);
 			predictive_prob = J(&sims., ncol(&interim.), .);
-			promising       = J(&sims., ncol(&interim.), .);
-			futility        = J(&sims., ncol(&interim.), .);
+			promising       = J(&sims., ncol(&interim.), 0);
+			futility        = J(&sims., ncol(&interim.), 0);
+			ongoing         = J(&sims., ncol(&interim.), 1);
 			
 			do j = 1 to ncol(&interim.);
+			
+				* if already stopped then 0;
+				ongoing[,j]   = (promising[,1:j][,+] + futility[,1:j][,+] = 0);
 		    
 				%* after enrollment;
 				if j > 1 then do;
@@ -147,24 +151,24 @@ proc datasets lib=work memtype=data kill nolist; quit;
 														y_sum[,1:j][,+], &nullproportion., 
 														&lambda., &sides., &margin.);
 
-				if j >= 2 then do;
-					* early stopping with promising result;
-                    promising[,j] = (posterior_prob[,j]  > &lambda. ) + promising[,1:j-1][,+];
-					* early stopping with futility result;
-                    futility[,j]  = (predictive_prob[,j] < &gamma_L.) +  futility[,1:j-1][,+];
+				if j > 1 then do;
+					* stopping with promising result;
+                    promising[,j] = (posterior_prob[,j]  > &lambda. );
+					* stopping with futility  result;
+                    futility[,j]  = (predictive_prob[,j] < &gamma_L.);
 				end;
 
 			end;
 			
 			met = promising[,+] > 0;
-			/* print n y_sum posterior_prob predictive_prob met; */
+			/* print n y_sum posterior_prob[format=8.3] predictive_prob[format=8.3] promising; */
 			
 			* ntotal & power;
 			samplesize  = &ntotal.[i];
 			interim = ncol(&interim.)-2;
 			power = mean(met);
 			se    =  std(met) / sqrt(&sims.);
-			ESS     = (n ## ( promising + futility <= 1))[,+][:,];
+			ESS     = (n ## ( ongoing=1 ))[,+][:,];
 			results = &lambda. || &gamma_L. || samplesize || power || ESS || interim || se;
 
 			append from results;

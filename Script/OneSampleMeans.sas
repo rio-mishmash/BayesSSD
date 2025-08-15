@@ -1,6 +1,4 @@
 
-proc datasets lib=work memtype=data kill nolist; quit;
-
 %macro m_Bayes_OneSampleMeans(
     nullmean,
     mean,
@@ -94,27 +92,33 @@ proc datasets lib=work memtype=data kill nolist; quit;
                 tau =  ((1/(prior_tau**2) + ncurrent/(stddev**2))**(-1))**(1/2);
             end;
             
-			* predictive response;
             if (ntotal-ncurrent) > 0 then do;
 			
-                * sampling from the posterior distribution;
-                epsilon = J(&sims., &nmc., .);
-                call randgen(epsilon, "normal", 0, tau); * mean=0;
-                * mean=0 -> mean=eta -> long; 
-                mu_sample_long = shape( epsilon + eta , &sims.*&nmc.); free epsilon;
-                
-                epsilon = J(&sims.*&nmc., ntotal-ncurrent, .);
-                call randgen(epsilon, "normal", 0, stddev); * mean=0;
-                * mean=0 -> mean=mu; 
-                epsilon = mu_sample_long + epsilon;          free mu_sample_long;
-                * rowMeans -> wide; 
-                y_mean_pred = shape( epsilon[,:] , &sims.);  free epsilon;
-
-                free epsilon mu_sample mu_sample_long y_pred_long y_mean_pred_long;
+				* predictive response;			
+                y_mean_pred = J(&sims., &nmc., .);
+                do k = 1 to &sims. by 100; * simulate with size 100 to prevent memory error;
+                    * number of rows;
+                    nrow = min(k+100-1, &sims.) -k +1;
+                    * extract rows from eta;
+                    _eta = eta[min(k:(k+nrow-1), nrow(eta)),];
+                    
+                    * sampling from the posterior distribution (parameter);
+                    epsilon = J(nrow, &nmc., .);
+                    call randgen(epsilon, "normal", 0, tau); * mean=0;
+                    * mean=0 -> mean=eta -> long; 
+                    mu_sample_long = shape( epsilon + _eta , nrow*&nmc.);
+                    * sampling from the posterior distribution (outcome);
+                    epsilon = J(nrow*&nmc., ntotal-ncurrent, .);
+                    call randgen(epsilon, "normal", 0, stddev); * mean=0;
+                    * mean=0 -> mean=mu; 
+                    mu_sample = mu_sample_long + epsilon;
+                    * rowMeans -> wide; 
+                    y_mean_pred[k:(k+nrow-1),] = shape( mu_sample[,:] , nrow);
+                end;
                 
                 posterior_prob = f_posterior_prob( ntotal, prior_eta, prior_tau, 
                                                   (ncurrent*y_mean_obs
-                                                   + (ntotal-ncurrent)*y_mean_pred) / max(ntotal,1), 
+                                                   + (ntotal-ncurrent)*y_mean_pred) / ntotal, 
                                                    stddev, nullmean, lambda, sides, margin);
 			end;
 			else do;

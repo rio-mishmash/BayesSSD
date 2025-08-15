@@ -1,6 +1,4 @@
 
-proc datasets lib=work memtype=data kill nolist; quit;
-
 %macro m_Bayes_TwoSampleMeans(
     refmean,
     meandiff,
@@ -110,42 +108,50 @@ proc datasets lib=work memtype=data kill nolist; quit;
                 tau1 =  ((1/(prior1_tau**2) + npergroup/(stddev**2))**(-1))**(1/2);
             end;
             
-			* predictive response;
             if (npergroup-ncurrent) > 0 then do;
-
-                * arm 0;
-                
-                    * sampling from the posterior distribution;
-                    epsilon = J(&sims., &nmc., .);
+			
+				* predictive response;
+                y0_mean_pred = J(&sims., &nmc., .);
+                y1_mean_pred = J(&sims., &nmc., .);
+                do k = 1 to &sims. by 100; * simulate with size 100 to prevent memory error;
+                    * number of rows;
+                    nrow = min(k+100-1, &sims.) -k +1;
+                    * extract rows from eta;
+                    _eta0 = eta0[min(k:(k+nrow-1), nrow(eta0)),];
+                    _eta1 = eta1[min(k:(k+nrow-1), nrow(eta1)),];
+                    
+                    * arm 0;
+                    * sampling from the posterior distribution (parameter);
+                    epsilon = J(nrow, &nmc., .);
                     call randgen(epsilon, "normal", 0, tau0); * mean=0;
                     * mean=0 -> mean=eta -> long; 
-                    mu0_sample_long = shape( epsilon + eta0 , &sims.*&nmc.); free epsilon;
-                    
-                    epsilon = J(&sims.*&nmc., npergroup-ncurrent, .);
+                    mu0_sample_long = shape( epsilon + _eta0 , nrow*&nmc.);
+                    * sampling from the posterior distribution (outcome);
+                    epsilon = J(nrow*&nmc., npergroup-ncurrent, .);
                     call randgen(epsilon, "normal", 0, stddev); * mean=0;
                     * mean=0 -> mean=mu; 
-                    epsilon = mu0_sample_long + epsilon;          free mu0_sample_long;
+                    mu0_sample = mu0_sample_long + epsilon;
                     * rowMeans -> wide; 
-                    y0_mean_pred = shape( epsilon[,:] , &sims.);  free epsilon;
+                    y0_mean_pred[k:(k+nrow-1),] = shape( mu0_sample[,:] , nrow);
 
-                * arm 1;
-                
-                    * sampling from the posterior distribution;
-                    epsilon = J(&sims., &nmc., .);
-                    call randgen(epsilon, "normal", 0, tau0); * mean=0;
+                    * arm 1;
+                    * sampling from the posterior distribution (parameter);
+                    epsilon = J(nrow, &nmc., .);
+                    call randgen(epsilon, "normal", 0, tau1); * mean=0;
                     * mean=0 -> mean=eta -> long; 
-                    mu1_sample_long = shape( epsilon + eta1 , &sims.*&nmc.); free epsilon;
-                    
-                    epsilon = J(&sims.*&nmc., npergroup-ncurrent, .);
+                    mu1_sample_long = shape( epsilon + _eta1 , nrow*&nmc.);
+                    * sampling from the posterior distribution (outcome);
+                    epsilon = J(nrow*&nmc., npergroup-ncurrent, .);
                     call randgen(epsilon, "normal", 0, stddev); * mean=0;
                     * mean=0 -> mean=mu; 
-                    epsilon = mu1_sample_long + epsilon;          free mu1_sample_long;
+                    mu1_sample = mu1_sample_long + epsilon;
                     * rowMeans -> wide; 
-                    y1_mean_pred = shape( epsilon[,:] , &sims.);  free epsilon;
+                    y1_mean_pred[k:(k+nrow-1),] = shape( mu1_sample[,:] , nrow);
+                end;
                 
                 posterior_prob = f_posterior_prob( npergroup, prior0_eta, prior0_tau, prior1_eta, prior1_tau, 
-                                                  (ncurrent*y0_mean_obs + (npergroup-ncurrent)*y0_mean_pred) / max(npergroup,1), 
-                                                  (ncurrent*y1_mean_obs + (npergroup-ncurrent)*y1_mean_pred) / max(npergroup,1), 
+                                                  (ncurrent*y0_mean_obs + (npergroup-ncurrent)*y0_mean_pred) / npergroup, 
+                                                  (ncurrent*y1_mean_obs + (npergroup-ncurrent)*y1_mean_pred) / npergroup, 
                                                    stddev, lambda, sides, margin);
 			end;
             else do;

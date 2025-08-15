@@ -1,6 +1,4 @@
 
-proc datasets lib=work memtype=data kill nolist; quit;
-
 %macro m_Bayes_TwoSampleFreq(
     refproportion,
     proportiondiff,
@@ -107,17 +105,27 @@ proc datasets lib=work memtype=data kill nolist; quit;
 				b1 = prior1_b + ncurrent - y1_sum_obs;
 			end;
 
-			* predictive response;
-			if (npergroup-ncurrent) > 0 then do;
+			if (npergroup-ncurrent) > 0 then do;			
 			
-				* sampling from the posterior distribution;
-				p0_sample = J(&sims., &nmc., .);
-				call randgen(p0_sample, "beta",  a0, b0);
-				p1_sample = J(&sims., &nmc., .);
-				call randgen(p1_sample, "beta",  a1, b1);
+				* predictive response;
+                y0_sum_pred = J(&sims., &nmc., .);
+                y1_sum_pred = J(&sims., &nmc., .);
+                do k = 1 to &sims. by 100; * simulate with size 100 to prevent memory error;
+                    * number of rows;
+                    nrow = min(k+100-1, &sims.) -k +1;
 
-				y0_sum_pred  = rand("binomial", p0_sample, npergroup-ncurrent);
-				y1_sum_pred  = rand("binomial", p1_sample, npergroup-ncurrent);
+					* arm 0;
+					* sampling from the posterior distribution;
+					p0_sample = J(nrow, &nmc., .);
+					call randgen(p0_sample, "beta",  a0, b0);
+					y0_sum_pred[k:(k+nrow-1),]  = rand("binomial", p0_sample, npergroup-ncurrent);
+
+					* arm 1;
+					* sampling from the posterior distribution;
+					p1_sample = J(nrow, &nmc., .);
+					call randgen(p1_sample, "beta",  a1, b1);
+					y1_sum_pred[k:(k+nrow-1),]  = rand("binomial", p1_sample, npergroup-ncurrent);
+                end;
 
 				posterior_prob = f_posterior_prob(npergroup, 
 												prior0_a, prior0_b, prior1_a, prior1_b, 

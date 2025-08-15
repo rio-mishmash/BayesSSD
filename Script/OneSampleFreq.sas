@@ -1,6 +1,4 @@
 
-proc datasets lib=work memtype=data kill nolist; quit;
-
 %macro m_Bayes_OneSampleFreq(
     nullproportion,
     proportion,
@@ -86,14 +84,19 @@ proc datasets lib=work memtype=data kill nolist; quit;
 				b = prior_b + ntotal - y_sum_obs;
 			end;
 			
-			* predictive response;
 			if (ntotal-ncurrent) > 0 then do;
 			
-				* sampling from the posterior distribution;
-				p_sample = J(&sims., &nmc., .);
-				call randgen(p_sample, "beta",  a, b);
-
-				y_sum_pred  = rand("binomial", p_sample, ntotal-ncurrent);
+				* predictive response;
+                y_sum_pred = J(&sims., &nmc., .);
+                do k = 1 to &sims. by 100; * simulate with size 100 to prevent memory error;
+                    * number of rows;
+                    nrow = min(k+100-1, &sims.) -k +1;
+					
+					* sampling from the posterior distribution;
+					p_sample = J(nrow, &nmc., .);
+					call randgen(p_sample, "beta",  a, b);
+					y_sum_pred[k:(k+nrow-1),]  = rand("binomial", p_sample, ntotal-ncurrent);
+                end;
 				
 				posterior_prob = f_posterior_prob( ntotal, prior_a, prior_b, 
 										     	   y_sum_obs + y_sum_pred,

@@ -114,8 +114,8 @@
 
 		*****  execution *****;
 		
-		results = J(ncol(&ntotal.), 7, .);
-		create Results from results[colname=({lambda gamma_L samplesize power ESS interim se})];
+		results = J(ncol(&ntotal.), 8, .);
+		create Results from results[colname=({lambda gamma_U gamma_L ntotal power ESS interim se})];
 		do i = 1 to ncol(&ntotal.);
 		    
 			%* init;
@@ -154,11 +154,15 @@
 														y_sum[,1:j][,+], &nullproportion., 
 														&lambda., &sides., &margin.);
 
-				if j > 1 then do;
-					* stopping with promising result;
-                    promising[,j] = (posterior_prob[,j]  > &lambda. );
-					* stopping with futility  result;
+				if 1 < j < ncol(&interim.) then do;
+					* stop early with promising result;
+                    promising[,j] = (predictive_prob[,j] > &gamma_U. );
+					* stop early with futility  result;
                     futility[,j]  = (predictive_prob[,j] < &gamma_L.);
+				end;
+				if j = ncol(&interim.) then do;
+					* termination with promising result;
+                    promising[,j] = (posterior_prob[,j]  > &lambda. );
 				end;
 
 			end;
@@ -167,12 +171,12 @@
 			/* print n y_sum posterior_prob[format=8.3] predictive_prob[format=8.3] promising; */
 			
 			* ntotal & power;
-			samplesize  = &ntotal.[i];
+			ntotal  = &ntotal.[i];
 			interim = ncol(&interim.)-2;
 			power = mean(met);
 			se    =  std(met) / sqrt(&sims.);
 			ESS     = (n ## ( ongoing=1 ))[,+][:,];
-			results = &lambda. || &gamma_L. || samplesize || power || ESS || interim || se;
+			results = &lambda. || &gamma_U. || &gamma_L. || ntotal || power || ESS || interim || se;
 
 			append from results;
 		end;

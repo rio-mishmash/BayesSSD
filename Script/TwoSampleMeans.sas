@@ -166,8 +166,8 @@
 
 		*****  execution *****;
 		
-		results = J(ncol(&npergroup.), 7, .);
-		create Results from results[colname=({lambda gamma_L samplesize power ESS interim se})];
+		results = J(ncol(&npergroup.), 8, .);
+		create Results from results[colname=({lambda gamma_U gamma_L npergroup power ESS interim se})];
 		do i = 1 to ncol(&npergroup.);
 		
             n       = J(     1, ncol(&interim.), .);               n[,1] = 0;
@@ -208,11 +208,15 @@
                                                         (n[,1:j]#y1_mean[,1:j])[,+] / max(n[,1:j][,+], 1),  /*weighted sum*/
                                                         &stddev., &lambda., &sides., &margin.);
 				
-				if j > 1 then do;
-					* stopping with promising result;
-                    promising[,j] = (posterior_prob[,j]  > &lambda. );
-					* stopping with futility  result;
+				if 1 < j < ncol(&interim.) then do;
+					* stop early with promising result;
+                    promising[,j] = (predictive_prob[,j] > &gamma_U. );
+					* stop early with futility  result;
                     futility[,j]  = (predictive_prob[,j] < &gamma_L.);
+				end;
+				if j = ncol(&interim.) then do;
+					* termination with promising result;
+                    promising[,j] = (posterior_prob[,j]  > &lambda. );
 				end;
 
 			end;
@@ -221,12 +225,12 @@
 			/*print n y0_mean y1_mean posterior_prob predictive_prob met;*/
 
 			* samplesize & power;
-			samplesize = &npergroup.[i];
+			npergroup = &npergroup.[i];
 			interim = ncol(&interim.)-2;
 			power = mean(met);
 			se    =  std(met) / sqrt(&sims.);
 			ESS     = (n ## ( ongoing=1 ))[,+][:,];
-			results = &lambda. || &gamma_L. || samplesize || power || ESS || interim || se;
+			results = &lambda. || &gamma_U. || &gamma_L. || npergroup || power || ESS || interim || se;
 			
 			append from results;
         end;

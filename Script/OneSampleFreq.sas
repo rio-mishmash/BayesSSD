@@ -10,8 +10,8 @@
     margin   =   0,
     prior_a  =   1, 
     prior_b  =   1, 
-    gamma_L  =   0,
-    gamma_U  =   1,
+    gamma_L  =   .,
+    gamma_U  =   .,
 
     sims   =  1000,
     nmc    =  1000,
@@ -154,13 +154,14 @@
 														y_sum[,1:j][,+], &nullproportion., 
 														&lambda., &sides., &margin.);
 
-				if 1 < j < ncol(&interim.) then do;
+				if 1 < j & j < ncol(&interim.) then do;
 					* stop early with promising result;
-                    promising[,j] = (predictive_prob[,j] > &gamma_U. );
+                    if &gamma_U. = . then promising[,j] = (posterior_prob[,j]  > &lambda. );
+                    if &gamma_U.^= . then promising[,j] = (predictive_prob[,j] > &gamma_U.);
 					* stop early with futility  result;
                     futility[,j]  = (predictive_prob[,j] < &gamma_L.);
 				end;
-				if j = ncol(&interim.) then do;
+				else if j = ncol(&interim.) then do;
 					* termination with promising result;
                     promising[,j] = (posterior_prob[,j]  > &lambda. );
 				end;

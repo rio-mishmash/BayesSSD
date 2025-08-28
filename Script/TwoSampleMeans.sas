@@ -13,8 +13,8 @@
     prior0_tau    =   100, 
     prior1_eta    =   0.0, 
     prior1_tau    =   100, 
-    gamma_L       =     0,
-    gamma_U       =     1,
+    gamma_L       =     .,
+    gamma_U       =     .,
     
     sims   =  100,
     nmc    =  1000,
@@ -208,13 +208,14 @@
                                                         (n[,1:j]#y1_mean[,1:j])[,+] / max(n[,1:j][,+], 1),  /*weighted sum*/
                                                         &stddev., &lambda., &sides., &margin.);
 				
-				if 1 < j < ncol(&interim.) then do;
+				if 1 < j & j < ncol(&interim.) then do;
 					* stop early with promising result;
-                    promising[,j] = (predictive_prob[,j] > &gamma_U. );
+                    if &gamma_U. = . then promising[,j] = (posterior_prob[,j]  > &lambda. );
+                    if &gamma_U.^= . then promising[,j] = (predictive_prob[,j] > &gamma_U.);
 					* stop early with futility  result;
                     futility[,j]  = (predictive_prob[,j] < &gamma_L.);
 				end;
-				if j = ncol(&interim.) then do;
+				else if j = ncol(&interim.) then do;
 					* termination with promising result;
                     promising[,j] = (posterior_prob[,j]  > &lambda. );
 				end;

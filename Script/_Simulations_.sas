@@ -171,7 +171,7 @@ title4 "without interim analysis";
     ntotal   = {20 40 60 80 100 150 200 300 500},
     interim  = {0.0 1.0},
     lambda   = 0.90,
-    sides    = "L",
+    sides    = "U",
     sims     = &sims.,
     nmc      = &nmc.
 );
@@ -184,7 +184,7 @@ title4 "with interim analysis (0.7N)";
     ntotal   = {20 40 60 80 100 150 200 300 500},
     interim  = {0.0 0.7 1.0},
     lambda   = 0.93,
-    sides    = "L",
+    sides    = "U",
     gamma_L  = 0.10,
     sims     = &sims.,
     nmc      = &nmc.
@@ -201,7 +201,7 @@ title3 "optimistic prior";
     lambda   = 0.90,
     prior_eta=+2.0,
     prior_tau= 2.0,
-    sides    = "L",
+    sides    = "U",
     sims     = &sims.,
     nmc      = &nmc.
 );
@@ -216,7 +216,7 @@ title3 "pessimistic prior";
     lambda   = 0.90,
     prior_eta=-1.0,
     prior_tau= 2.0,
-    sides    = "L",
+    sides    = "U",
     sims     = &sims.,
     nmc      = &nmc.
 );
@@ -233,7 +233,7 @@ title4 "without interim analysis";
     ntotal   = {20 40 60 80 100 150 200 300 500},
     interim  = {0.0 1.0},
     lambda   = 0.90,
-    sides    = "L",
+    sides    = "U",
     sims     = &sims.,
     nmc      = &nmc.
 );
@@ -246,7 +246,7 @@ title4 "with interim analysis (0.7N)";
     ntotal   = {20 40 60 80 100 150 200 300 500},
     interim  = {0.0 0.7 1.0},
     lambda   = 0.93,
-    sides    = "L",
+    sides    = "U",
     gamma_L  = 0.10,
     sims     = &sims.,
     nmc      = &nmc.
@@ -263,7 +263,7 @@ title3 "optimistic prior";
     lambda   = 0.90,
     prior_eta=+2.0,
     prior_tau= 2.0,
-    sides    = "L",
+    sides    = "U",
     sims     = &sims.,
     nmc      = &nmc.
 );
@@ -278,7 +278,7 @@ title3 "pessimistic prior";
     lambda   = 0.90,
     prior_eta=-1.0,
     prior_tau= 2.0,
-    sides    = "L",
+    sides    = "U",
     sims     = &sims.,
     nmc      = &nmc.
 );
@@ -480,7 +480,7 @@ title3 "non-informative prior";
 title4 "without interim analysis";
 %m_Bayes_TwoSampleMeans(
     refmean    = 0.0,
-    meandiff   = rand("normal",+1.0,0.2),
+    meandiff   = rand("normal",+1.0,0.1),
     stddev     = 5.0,
     npergroup  = {20 40 60 80 100 150 200 300 500},
     interim    = {0.0 1.0},
@@ -493,7 +493,7 @@ title4 "without interim analysis";
 title4 "with interim analysis (0.5N 0.7N)";
 %m_Bayes_TwoSampleMeans(
     refmean    = 0.0,
-    meandiff   = rand("normal",+1.0,0.2),
+    meandiff   = rand("normal",+1.0,0.1),
     stddev     = 5.0,
     npergroup  = {20 40 60 80 100 150 200 300 500},
     interim    = {0.0 0.5 0.7 1.0},
@@ -508,7 +508,7 @@ title4;
 title3 "optimistic prior";
 %m_Bayes_TwoSampleMeans(
     refmean    = 0.0,
-    meandiff   = rand("normal",+1.0,0.2),
+    meandiff   = rand("normal",+1.0,0.1),
     stddev     = 5.0,
     npergroup  = {20 40 60 80 100 150 200 300 500},
     interim    = {0.0 1.0},
@@ -523,7 +523,7 @@ title3 "optimistic prior";
 title3 "pessimistic prior";
 %m_Bayes_TwoSampleMeans(
     refmean    = 0.0,
-    meandiff   = rand("normal",+1.0,0.2),
+    meandiff   = rand("normal",+1.0,0.1),
     stddev     = 5.0,
     npergroup  = {20 40 60 80 100 150 200 300 500},
     interim    = {0.0 1.0},

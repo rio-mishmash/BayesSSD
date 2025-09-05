@@ -1,24 +1,24 @@
 
 %macro m_Bayes_TwoSampleMeans(
-    refmean,
-    meandiff,
-    stddev,
-    npergroup,
-    interim,
-    lambda,
-    sides,
+    refmean,      /* Specifies the reference mean */
+    meandiff,     /* Specifies the mean difference */
+    stddev,       /* Specifies the common standard deviation */
+    npergroup,    /* Specifies the common sample size per group */
+    sides,		  /* Specifies the direction of the statistical test */
+    lambda,		  /* Specifies the promising threshold at the final analysis */
+	
+    interim  =  {0, 1},	/* Specifies the analysis time points (0=baseline, 1=final analysis)  */
+    margin   =   0,     /* Specifies the equivalence or noninferiority or superiority margin */
+    prior0_eta  =  0.0, /* Specifies the mean   parameter of the normal prior for group 0 */ 
+    prior0_tau  =  100, /* Specifies the stddev parameter of the normal prior for group 0 */ 
+    prior1_eta  =  0.0, /* Specifies the mean   parameter of the normal prior for group 1 */ 
+    prior1_tau  =  100, /* Specifies the stddev parameter of the normal prior for group 1 */ 
+    gamma_L  =   .,     /* Specifies the futility threshold at interim analyses */
+    gamma_U  =   .,     /* Specifies the promising threshold at interim analyses */
 
-    margin        =     0,
-    prior0_eta    =   0.0, 
-    prior0_tau    =   100, 
-    prior1_eta    =   0.0, 
-    prior1_tau    =   100, 
-    gamma_L       =     .,
-    gamma_U       =     .,
-    
-    sims   =  100,
-    nmc    =  1000,
-    seed   =  2025
+    sims   =  1000, /* Specifies the number of simulations */
+    nmc    =  1000, /* Specifies the number of Monte Carlo samples */
+    seed   =  2025  /* Specifies the seed for random number generation */
 );
     %* time to start;
     data start;

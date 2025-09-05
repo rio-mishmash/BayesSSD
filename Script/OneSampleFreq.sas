@@ -1,21 +1,21 @@
 
 %macro m_Bayes_OneSampleFreq(
-    nullproportion,
-    proportion,
-    ntotal,
-    interim,
-    sides,
-    lambda,
+    nullproportion,	/* Specifies the null proportion */
+    proportion,		/* Specifies the binomial proportion */
+    ntotal,			/* Specifies the sample size */
+    sides,			/* Specifies the direction of the statistical test */
+    lambda,			/* Specifies the promising threshold at the final analysis */
+	
+    interim  =  {0, 1},	/* Specifies the analysis time points (0=baseline, 1=final analysis)  */
+    margin   =   0, /* Specifies the equivalence or noninferiority or superiority margin */
+    prior_a  =   1, /* Specifies the first  parameter of the beta prior */
+    prior_b  =   1, /* Specifies the second parameter of the beta prior */
+    gamma_L  =   ., /* Specifies the futility threshold at interim analyses */
+    gamma_U  =   ., /* Specifies the promising threshold at interim analyses */
 
-    margin   =   0,
-    prior_a  =   1, 
-    prior_b  =   1, 
-    gamma_L  =   .,
-    gamma_U  =   .,
-
-    sims   =  1000,
-    nmc    =  1000,
-    seed   =  2025
+    sims   =  1000, /* Specifies the number of simulations */
+    nmc    =  1000, /* Specifies the number of Monte Carlo samples */
+    seed   =  2025  /* Specifies the seed for random number generation */
 );
 	%* time to start;
 	data start;

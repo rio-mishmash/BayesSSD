@@ -1,22 +1,38 @@
-
+/* 
+     * nullmean    Specifies the null mean
+     * mean        Specifies the mean
+     * stddev      Specifies the standard deviation
+     * ntotal      Specifies the sample size
+     * sides       Specifies the direction of the statistical test
+     * lambda      Specifies the promising threshold at the final analysis
+     * interim     Specifies the analysis time points (0=baseline, 1=final analysis)
+     * margin      Specifies the equivalence or noninferiority or superiority margin
+     * prior_eta   Specifies the mean parameter of the normal prior
+     * prior_tau   Specifies the stddev parameter of the normal prior
+     * gamma_L     Specifies the futility threshold at interim analyses
+     * gamma_U     Specifies the promising threshold at interim analyses
+     * sims        Specifies the number of simulations
+     * nmc         Specifies the number of Monte Carlo samples
+     * seed        Specifies the seed for random number generation
+*/
 %macro m_Bayes_OneSampleMeans(
-    nullmean,   /* Specifies the null mean */
-    mean,       /* Specifies the mean */
-    stddev,     /* Specifies the standard deviation */
-    ntotal,     /* Specifies the sample size */
-    sides,		/* Specifies the direction of the statistical test */
-    lambda,		/* Specifies the promising threshold at the final analysis */
-
-    interim  =  {0, 1},	/* Specifies the analysis time points (0=baseline, 1=final analysis)  */
-    margin   =   0,     /* Specifies the equivalence or noninferiority or superiority margin */
-    prior_eta  =  0.0,  /* Specifies the mean   parameter of the normal prior */ 
-    prior_tau  =  100,  /* Specifies the stddev parameter of the normal prior */ 
-    gamma_L  =   .,     /* Specifies the futility threshold at interim analyses */
-    gamma_U  =   .,     /* Specifies the promising threshold at interim analyses */
-
-    sims   =  1000, /* Specifies the number of simulations */
-    nmc    =  1000, /* Specifies the number of Monte Carlo samples */
-    seed   =  2025  /* Specifies the seed for random number generation */
+    nullmean, 
+    mean, 
+    stddev, 
+    ntotal, 
+    sides, 
+    lambda,
+    
+    interim  = %quote({0.0 1.0}),
+    margin   =   0,
+    prior_eta  =  0.0,
+    prior_tau  =  100,
+    gamma_L  =   .,
+    gamma_U  =   .,
+    
+    sims   =  1000,
+    nmc    =  1000,
+    seed   =  2025
 );
     %* time to start;
     data start;

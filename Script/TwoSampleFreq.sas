@@ -220,7 +220,7 @@
 
 			end;
 			
-			met = promising[,+] > 0;
+			met = (promising # ( ongoing=1 ))[,+];
 			/* print n y0_sum y1_sum posterior_prob predictive_prob met; */
 			
 			* npergroup & power;

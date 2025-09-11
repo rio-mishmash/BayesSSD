@@ -199,7 +199,7 @@
 
 			end;
 			
-			met = (promising[,+] > 0);
+			met = (promising # ( ongoing=1 ))[,+];
 			/* print n y_mean posterior_prob[format=8.3] promising futility; */
 
 			* samplesize & power;

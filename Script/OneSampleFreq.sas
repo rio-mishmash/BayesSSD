@@ -183,7 +183,7 @@
 
 			end;
 			
-			met = promising[,+] > 0;
+			met = (promising # ( ongoing=1 ))[,+];
 			/* print n y_sum posterior_prob[format=8.3] predictive_prob[format=8.3] promising; */
 			
 			* ntotal & power;

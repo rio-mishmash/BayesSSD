@@ -240,7 +240,7 @@
 
 			end;
 			
-			met = (promising[,+] > 0);
+			met = (promising # ( ongoing=1 ))[,+];
 			/*print n y0_mean y1_mean posterior_prob predictive_prob met;*/
 
 			* samplesize & power;
